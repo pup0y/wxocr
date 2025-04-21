@@ -1,8 +1,9 @@
-FROM python:3.12-slim-bookworm
+FROM python:3.12-slim
 
 # 替换为国内源
-RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list && \
-    sed -i 's|security.debian.org/debian-security|mirrors.aliyun.com/debian-security|g' /etc/apt/sources.list
+RUN echo  "deb http://mirrors.aliyun.com/debian bullseye main" >/etc/apt/sources.list 
+RUN echo  "deb http://mirrors.aliyun.com/debian-security bullseye-security main" >>/etc/apt/sources.list 
+RUN echo  "deb http://mirrors.aliyun.com/debian bullseye-updates main" >>/etc/apt/sources.list
 
 RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
