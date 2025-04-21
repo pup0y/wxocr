@@ -46,12 +46,24 @@
             background: #f8fff9;
         }
 
+        .preview-container {
+            position: relative;
+            display: inline-block;
+            margin: 20px 0;
+        }
+
         .preview-image {
             max-width: 100%;
             max-height: 400px;
-            margin: 20px 0;
             border-radius: 8px;
             display: none;
+        }
+
+        .text-box {
+            position: absolute;
+            border: 2px solid red;
+            background-color: rgba(255, 0, 0, 0.1);
+            cursor: pointer;
         }
 
         .input-group {
@@ -131,7 +143,9 @@
         </div>
 
         <!-- 图片预览 -->
-        <img id="preview" class="preview-image">
+        <div class="preview-container">
+            <img id="preview" class="preview-image">
+        </div>
 
         <!-- 加载状态 -->
         <div class="loading" id="loading">识别中，请稍候...</div>
@@ -193,12 +207,15 @@
         async function handleFile(file) {
             if (!file) return;
             
+            // 清除之前的文本框
+            clearTextBoxes();
 
             // 显示预览图片
             const reader = new FileReader();
             reader.onload = (e) => {
-                document.getElementById('preview').src = e.target.result;
-                document.getElementById('preview').style.display = 'block';
+                const preview = document.getElementById('preview');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
             };
             reader.readAsDataURL(file);
         }
@@ -212,6 +229,7 @@
             try {
                 showLoading();
                 clearError();
+                clearTextBoxes();
 
                 if (file) {
                     base64Data = await fileToBase64(file);
@@ -253,7 +271,22 @@
             // 显示结果表格
             const tbody = document.getElementById('resultBody');
             tbody.innerHTML = '';
+            
+            // 清除之前的文本框
+            clearTextBoxes();
+            
+            const preview = document.getElementById('preview');
+            const previewContainer = document.querySelector('.preview-container');
+            const imgWidth = preview.naturalWidth;
+            const imgHeight = preview.naturalHeight;
+            const displayWidth = preview.offsetWidth;
+            const displayHeight = preview.offsetHeight;
+            
+            const widthRatio = displayWidth / imgWidth;
+            const heightRatio = displayHeight / imgHeight;
+
             resultData.ocr_response.forEach(item => {
+                // 创建表格行
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${item.text}</td>
@@ -262,8 +295,36 @@
                         ${item.right.toFixed(1)}, ${item.bottom.toFixed(1)})</td>
                 `;
                 tbody.appendChild(row);
+
+                // 创建文本框
+                const textBox = document.createElement('div');
+                textBox.className = 'text-box';
+                textBox.style.left = `${item.left * widthRatio}px`;
+                textBox.style.top = `${item.top * heightRatio}px`;
+                textBox.style.width = `${(item.right - item.left) * widthRatio}px`;
+                textBox.style.height = `${(item.bottom - item.top) * heightRatio}px`;
+                textBox.dataset.text = item.text;
+                
+                textBox.addEventListener('click', function() {
+                    copyToClipboard(this.dataset.text);
+                });
+                
+                previewContainer.appendChild(textBox);
             });
             document.getElementById('resultTable').style.display = 'table';
+        }
+
+        function clearTextBoxes() {
+            const boxes = document.querySelectorAll('.text-box');
+            boxes.forEach(box => box.remove());
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert(`已复制: ${text}`);
+            }).catch(err => {
+                console.error('复制失败:', err);
+            });
         }
 
         // 工具函数
