@@ -1,5 +1,10 @@
 FROM python:3.12-slim
 
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list && \
+    sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
+
+RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
+
 RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
