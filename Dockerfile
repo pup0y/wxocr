@@ -13,8 +13,8 @@ RUN pip install flask
 
 WORKDIR /app
 COPY wcocr.cpython-312-x86_64-linux-gnu.so .
-COPY wx .
-COPY templates .
+COPY wx ./wx
+COPY templates/ ./templates
 COPY main.py .
 
 CMD ["python", "main.py"]
