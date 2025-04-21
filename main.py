@@ -14,34 +14,34 @@ def index():
 @app.route('/ocr', methods=['POST'])
 def ocr():
     try:
-        # Get base64 image from request
-        image_data = request.json.get('image')
-        if not image_data:
-            return jsonify({'error': 'No image data provided'}), 400
+        # 从formdata获取图片文件
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image file provided'}), 400
+            
+        image_file = request.files['image']
+        if not image_file or image_file.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
 
-        # Create temp directory if not exists
+        # 创建临时目录
         temp_dir = 'temp'
         if not os.path.exists(temp_dir):
             os.makedirs(temp_dir)
 
-        # Generate unique filename and save image
+        # 生成唯一文件名并保存图片
         filename = os.path.join(temp_dir, f"{str(uuid.uuid4())}.png")
         try:
-            image_bytes = base64.b64decode(image_data)
-            with open(filename, 'wb') as f:
-                f.write(image_bytes)
+            image_file.save(filename)
 
-            # Process image with OCR
+            # 使用OCR处理图片
             result = wcocr.ocr(filename)
             return jsonify({'result': result})
 
         finally:
-            # Clean up temp file
+            # 清理临时文件
             if os.path.exists(filename):
                 os.remove(filename)
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, threaded=True)
