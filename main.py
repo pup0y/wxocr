@@ -2,10 +2,14 @@ import wcocr
 import os
 import uuid
 import base64
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
 wcocr.init("/app/wx/opt/wechat/wxocr", "/app/wx/opt/wechat")
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/ocr', methods=['POST'])
 def ocr():
@@ -40,4 +44,4 @@ def ocr():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, threaded=True)
+    app.run(host='0.0.0.0', port=15000, threaded=True)
