@@ -34,7 +34,7 @@ def ocr():
 
             # 使用OCR处理图片
             result = wcocr.ocr(filename)
-            return jsonify({'result': result})
+            return jsonify({result})
 
         finally:
             # 清理临时文件
